@@ -671,14 +671,19 @@ async function loadNotes() {
   grid.innerHTML = '<div class="loading-notes"><div class="spinner"></div><span style="font-family:var(--hf);font-size:0.85rem;">Loading notes…</span></div>';
   try {
     const res = await fetch(NOTES_API);
-    if (!res.ok) throw new Error('not found');
+    if (!res.ok) {
+      const errorData = await res.json(); // Try to parse error response
+      console.error("API Error fetching notes:", errorData.error || res.statusText);
+      throw new Error(errorData.error || 'Failed to fetch notes from API');
+    }
     const data = await res.json();
     allNotes = (data.notes || []).filter(n => n.published !== false);
     renderNotes(allNotes);
   } catch(e) {
-    // Fall back to demo notes if DB not yet set up
+    console.error("Frontend error loading notes:", e);
     allNotes = getDemoNotes();
     renderNotes(allNotes);
+    grid.innerHTML = `<div class="empty-state"><div class="es-icon">⚠️</div><div style="font-family:var(--hf);font-weight:700;margin-bottom:0.4rem;">Error loading notes</div><div style="font-size:0.85rem;">${e.message}. Displaying demo data.</div></div>`;
   }
 }
 

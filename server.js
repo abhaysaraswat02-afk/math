@@ -9,34 +9,27 @@ const jwt = require('jsonwebtoken');
 
 // Firebase Admin Setup
 let db;
-
-function getDb() {
-  if (db) return db;
-  try {
-    const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
-    if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
-      return null;
-    }
+try {
+  const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
+  if (FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY) {
     if (!admin.apps.length) {
-      const pk = FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+      // Remove surrounding quotes and handle escaped newlines (\n)
+      const privateKeyFormatted = FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: FIREBASE_PROJECT_ID,
           clientEmail: FIREBASE_CLIENT_EMAIL,
-          privateKey: pk,
+          privateKey: privateKeyFormatted,
         })
       });
     }
     db = admin.firestore();
-    return db;
-  } catch (err) {
-    console.error("Firebase init error:", err.message);
-    return null;
+  } else {
+    console.warn("Firebase credentials missing from environment variables.");
   }
+} catch (err) {
+  console.error("Firebase setup failed:", err.message);
 }
-
-// Initial attempt
-getDb();
 
 // Cloudinary Setup
 cloudinary.config({
@@ -76,8 +69,8 @@ function authMiddleware(req, res, next) {
 
 app.get('/api/notes', async (req, res) => {
   try {
-    const database = getDb();
-    if (!database) return res.status(503).json({ error: 'Database connection is not ready. Ensure FIREBASE keys are set in Vercel Settings.' });
+    const database = db || initializeFirebase(); // Re-attempt initialization if db is null
+    if (!database) return res.status(503).json({ error: 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
     const snapshot = await database.collection('notes').where('published', '==', true).get();
     const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
@@ -97,8 +90,8 @@ app.post('/api/staff/login', (req, res) => {
 
 app.get('/api/staff/notes', authMiddleware, async (req, res) => {
   try {
-    const database = getDb();
-    if (!database) return res.status(503).json({ error: 'Database connection is not ready.' });
+    const database = db || initializeFirebase();
+    if (!database) return res.status(503).json({ error: 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
     const snapshot = await database.collection('notes').get();
     const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
@@ -109,8 +102,8 @@ app.get('/api/staff/notes', authMiddleware, async (req, res) => {
 
 app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, res) => {
   try {
-    const database = getDb();
-    if (!database) throw new Error("Database not initialized");
+    const database = db || initializeFirebase();
+    if (!database) return res.status(503).json({ error: 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
     const note = { ...req.body };
     if (req.file) {
       const result = await new Promise((resolve, reject) => {
@@ -134,8 +127,8 @@ app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, r
 
 app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req, res) => {
   try {
-    const database = getDb();
-    if (!database) throw new Error("Database not initialized");
+    const database = db || initializeFirebase();
+    if (!database) return res.status(503).json({ error: 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
     const id = req.params.id;
     const updates = { ...req.body };
     if (req.file) {
@@ -164,8 +157,8 @@ app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req
 
 app.delete('/api/staff/notes/:id', authMiddleware, async (req, res) => {
   try {
-    const database = getDb();
-    if (!database) throw new Error("Database not initialized");
+    const database = db || initializeFirebase();
+    if (!database) return res.status(503).json({ error: 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
     await database.collection('notes').doc(req.params.id).delete();
     res.json({ success: true });
   } catch (err) {
