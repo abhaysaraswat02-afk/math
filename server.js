@@ -9,27 +9,35 @@ const jwt = require('jsonwebtoken');
 
 // Firebase Admin Setup
 let db;
-try {
+
+function initializeFirebase() {
+  if (admin.apps.length) return admin.firestore();
+
   const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
-  if (FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY) {
-    if (!admin.apps.length) {
-      // Remove surrounding quotes and handle escaped newlines (\n)
-      const privateKeyFormatted = FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: FIREBASE_PROJECT_ID,
-          clientEmail: FIREBASE_CLIENT_EMAIL,
-          privateKey: privateKeyFormatted,
-        })
-      });
-    }
-    db = admin.firestore();
-  } else {
+  if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
     console.warn("Firebase credentials missing from environment variables.");
+    return null;
   }
-} catch (err) {
-  console.error("Firebase setup failed:", err.message);
+
+  try {
+    // Remove surrounding quotes and handle escaped newlines (\n)
+    const privateKeyFormatted = FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: FIREBASE_PROJECT_ID,
+        clientEmail: FIREBASE_CLIENT_EMAIL,
+        privateKey: privateKeyFormatted,
+      })
+    });
+    db = admin.firestore();
+    return db;
+  } catch (err) {
+    console.error("Firebase initialization failed:", err.message);
+    return null;
+  }
 }
+
+db = initializeFirebase();
 
 // Cloudinary Setup
 cloudinary.config({
