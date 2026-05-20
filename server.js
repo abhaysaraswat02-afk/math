@@ -9,27 +9,34 @@ const jwt = require('jsonwebtoken');
 
 // Firebase Admin Setup
 let db;
-try {
-  const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
-  if (FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY) {
+
+function getDb() {
+  if (db) return db;
+  try {
+    const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
+    if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
+      return null;
+    }
     if (!admin.apps.length) {
-      // Remove surrounding quotes and handle escaped newlines (\n)
-      const privateKeyFormatted = FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+      const pk = FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: FIREBASE_PROJECT_ID,
           clientEmail: FIREBASE_CLIENT_EMAIL,
-          privateKey: privateKeyFormatted,
+          privateKey: pk,
         })
       });
     }
     db = admin.firestore();
-  } else {
-    console.warn("Firebase credentials missing from environment variables.");
+    return db;
+  } catch (err) {
+    console.error("Firebase init error:", err.message);
+    return null;
   }
-} catch (err) {
-  console.error("Firebase setup failed:", err.message);
 }
+
+// Initial attempt
+getDb();
 
 // Cloudinary Setup
 cloudinary.config({
@@ -69,8 +76,9 @@ function authMiddleware(req, res, next) {
 
 app.get('/api/notes', async (req, res) => {
   try {
-    if (!db) return res.status(503).json({ error: 'Database connection is not ready. Check server logs.' });
-    const snapshot = await db.collection('notes').where('published', '==', true).get();
+    const database = getDb();
+    if (!database) return res.status(503).json({ error: 'Database connection is not ready. Ensure FIREBASE keys are set in Vercel Settings.' });
+    const snapshot = await database.collection('notes').where('published', '==', true).get();
     const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
   } catch (err) {
@@ -89,8 +97,9 @@ app.post('/api/staff/login', (req, res) => {
 
 app.get('/api/staff/notes', authMiddleware, async (req, res) => {
   try {
-    if (!db) return res.status(503).json({ error: 'Database connection is not ready.' });
-    const snapshot = await db.collection('notes').get();
+    const database = getDb();
+    if (!database) return res.status(503).json({ error: 'Database connection is not ready.' });
+    const snapshot = await database.collection('notes').get();
     const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
   } catch (err) {
@@ -100,7 +109,8 @@ app.get('/api/staff/notes', authMiddleware, async (req, res) => {
 
 app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, res) => {
   try {
-    if (!db) throw new Error("Database not initialized");
+    const database = getDb();
+    if (!database) throw new Error("Database not initialized");
     const note = { ...req.body };
     if (req.file) {
       const result = await new Promise((resolve, reject) => {
@@ -115,7 +125,7 @@ app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, r
     note.published = note.published === 'true';
     note.originalPrice = note.originalPrice ? Number(note.originalPrice) : null;
     note.price = Number(note.price);
-    const docRef = await db.collection('notes').add(note);
+    const docRef = await database.collection('notes').add(note);
     res.status(201).json({ id: docRef.id, ...note });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -124,7 +134,8 @@ app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, r
 
 app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req, res) => {
   try {
-    if (!db) throw new Error("Database not initialized");
+    const database = getDb();
+    if (!database) throw new Error("Database not initialized");
     const id = req.params.id;
     const updates = { ...req.body };
     if (req.file) {
@@ -144,7 +155,7 @@ app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req
     if (updates.price) updates.price = Number(updates.price);
     if (updates.originalPrice) updates.originalPrice = Number(updates.originalPrice);
 
-    await db.collection('notes').doc(id).update(updates);
+    await database.collection('notes').doc(id).update(updates);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -153,8 +164,9 @@ app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req
 
 app.delete('/api/staff/notes/:id', authMiddleware, async (req, res) => {
   try {
-    if (!db) throw new Error("Database not initialized");
-    await db.collection('notes').doc(req.params.id).delete();
+    const database = getDb();
+    if (!database) throw new Error("Database not initialized");
+    await database.collection('notes').doc(req.params.id).delete();
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
