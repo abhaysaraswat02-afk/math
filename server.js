@@ -1,4 +1,8 @@
-require('dotenv').config();
+try {
+  require('dotenv').config();
+} catch (e) {
+  // dotenv is only needed for local development
+}
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -27,8 +31,13 @@ let firebaseInitErrorMessage = ""; // Stores specific error message if Firebase 
 function initializeFirebase() {
   // If Firebase Admin SDK is already initialized, return its firestore instance
   if (admin.apps.length) {
-    if (db) return db; // If db is already assigned, return it
-    return null; // If app is initialized but db isn't, something went wrong previously
+    try {
+      if (db) return db;
+      db = admin.firestore();
+      return db;
+    } catch (e) {
+      return null;
+    }
   }
 
   const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
