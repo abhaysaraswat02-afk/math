@@ -8,20 +8,29 @@ const cloudinary = require('cloudinary').v2;
 const jwt = require('jsonwebtoken');
 
 // Firebase Admin Setup
+let db;
 if (!admin.apps.length) {
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY 
-    ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') 
-    : undefined;
+  const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
 
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: privateKey,
-    })
-  });
+  if (FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY) {
+    try {
+      // Remove potential surrounding quotes and handle escaped newlines
+      const privateKeyFormatted = FIREBASE_PRIVATE_KEY.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: FIREBASE_PROJECT_ID,
+          clientEmail: FIREBASE_CLIENT_EMAIL,
+          privateKey: privateKeyFormatted,
+        })
+      });
+      db = admin.firestore();
+    } catch (err) {
+      console.error("Firebase initialization failed:", err.message);
+    }
+  } else {
+    console.error("Firebase Admin SDK not initialized: Missing one or more environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY).");
+  }
 }
-const db = admin.firestore();
 
 // Cloudinary Setup
 cloudinary.config({
@@ -61,6 +70,7 @@ function authMiddleware(req, res, next) {
 
 app.get('/api/notes', async (req, res) => {
   try {
+    if (!db) throw new Error("Database not initialized");
     const snapshot = await db.collection('notes').where('published', '==', true).get();
     const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
@@ -80,6 +90,7 @@ app.post('/api/staff/login', (req, res) => {
 
 app.get('/api/staff/notes', authMiddleware, async (req, res) => {
   try {
+    if (!db) throw new Error("Database not initialized");
     const snapshot = await db.collection('notes').get();
     const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
@@ -90,6 +101,7 @@ app.get('/api/staff/notes', authMiddleware, async (req, res) => {
 
 app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, res) => {
   try {
+    if (!db) throw new Error("Database not initialized");
     const note = { ...req.body };
     if (req.file) {
       const result = await new Promise((resolve, reject) => {
@@ -113,6 +125,7 @@ app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, r
 
 app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req, res) => {
   try {
+    if (!db) throw new Error("Database not initialized");
     const id = req.params.id;
     const updates = { ...req.body };
     if (req.file) {
@@ -141,6 +154,7 @@ app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req
 
 app.delete('/api/staff/notes/:id', authMiddleware, async (req, res) => {
   try {
+    if (!db) throw new Error("Database not initialized");
     await db.collection('notes').doc(req.params.id).delete();
     res.json({ success: true });
   } catch (err) {
