@@ -23,8 +23,8 @@ npm start
 - Password: `era1234`
 
 ## Notes data
-The backend stores note metadata in `data/notes-db.json`. This file is managed directly by the server.
-PDF files are uploaded to Cloudinary, and their URLs are stored in `notes-db.json`.
+The backend stores note metadata in **Firebase Firestore**.
+PDF files are uploaded to Cloudinary, and their URLs are stored in Firestore.
 
 ## API Endpoints
 

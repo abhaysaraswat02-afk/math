@@ -2,12 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const cors = require('cors');
 const multer = require('multer');
+const admin = require('firebase-admin'); // Re-add Firebase Admin
+const cors = require('cors'); // Keep cors
 const cloudinary = require('cloudinary').v2;
 const jwt = require('jsonwebtoken');
-
-const DATA_PATH = path.join(__dirname, 'data', 'notes-db.json');
 
 // Cloudinary Setup
 cloudinary.config({
@@ -21,6 +20,38 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'era1234';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 const PORT = process.env.PORT || 3000;
 
+// Firebase Admin Setup
+let db;
+let firebaseInitErrorMessage = ""; // Stores specific error message if Firebase init fails
+
+function initializeFirebase() {
+  // If Firebase Admin SDK is already initialized, return its firestore instance
+  if (admin.apps.length) {
+    if (db) return db; // If db is already assigned, return it
+    return null; // If app is initialized but db isn't, something went wrong previously
+  }
+
+  const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
+
+  if (!FIREBASE_PROJECT_ID) { firebaseInitErrorMessage = "FIREBASE_PROJECT_ID is missing from Vercel Environment Variables."; console.error("Firebase Init Error:", firebaseInitErrorMessage); return null; }
+  if (!FIREBASE_CLIENT_EMAIL) { firebaseInitErrorMessage = "FIREBASE_CLIENT_EMAIL is missing from Vercel Environment Variables."; console.error("Firebase Init Error:", firebaseInitErrorMessage); return null; }
+  if (!FIREBASE_PRIVATE_KEY) { firebaseInitErrorMessage = "FIREBASE_PRIVATE_KEY is missing from Vercel Environment Variables."; console.error("Firebase Init Error:", firebaseInitErrorMessage); return null; }
+
+  try {
+    // Remove potential surrounding quotes and handle escaped newlines (\n)
+    const privateKeyFormatted = FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+    admin.initializeApp({ credential: admin.credential.cert({ projectId: FIREBASE_PROJECT_ID, clientEmail: FIREBASE_CLIENT_EMAIL, privateKey: privateKeyFormatted }) });
+    db = admin.firestore(); // Assign to global db variable
+    console.log("Firebase Admin SDK initialized successfully.");
+    return db;
+  } catch (err) {
+    firebaseInitErrorMessage = `Firebase Admin SDK initialization failed: ${err.message}. Please check FIREBASE_PRIVATE_KEY format and content in Vercel Environment Variables.`;
+    console.error("Firebase Init Error:", firebaseInitErrorMessage);
+    return null;
+  }
+}
+db = initializeFirebase(); // Attempt initialization at startup
+
 // Multer Memory Storage for Cloudinary streaming
 // We use memory storage because Vercel's serverless functions don't have persistent local storage.
 const upload = multer({ storage: multer.memoryStorage() });
@@ -28,20 +59,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Helper functions for local JSON data
-function loadNotesData() {
-  try {
-    const raw = fs.readFileSync(DATA_PATH, 'utf8');
-    return JSON.parse(raw);
-  } catch (error) {
-    return { notes: [] };
-  }
-}
-function saveNotesData(data) {
-  fs.mkdirSync(path.dirname(DATA_PATH), { recursive: true }); // Ensure directory exists
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2), 'utf8');
-}
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/staff.html', (req, res) => res.sendFile(path.join(__dirname, 'staff.html')));
@@ -62,12 +79,14 @@ function authMiddleware(req, res, next) {
 
 app.get('/api/notes', async (req, res) => {
   try {
-    const data = loadNotesData();
-    const notes = (data.notes || []).filter(n => n.published !== false);
+    const database = db || initializeFirebase(); // Re-attempt initialization if db is null
+    if (!database) return res.status(503).json({ error: firebaseInitErrorMessage || 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
+    const snapshot = await database.collection('notes').where('published', '==', true).get();
+    const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
   } catch (err) {
     console.error("Error fetching notes:", err);
-    res.status(500).json({ error: 'Failed to fetch notes from local data store.' });
+    res.status(500).json({ error: 'Firestore error: ' + err.message });
   }
 });
 
@@ -82,18 +101,21 @@ app.post('/api/staff/login', (req, res) => {
 
 app.get('/api/staff/notes', authMiddleware, async (req, res) => {
   try {
-    const data = loadNotesData();
-    const notes = data.notes || [];
+    const database = db || initializeFirebase();
+    if (!database) return res.status(503).json({ error: firebaseInitErrorMessage || 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
+    const snapshot = await database.collection('notes').get();
+    const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
   } catch (err) {
     console.error("Error fetching staff notes:", err);
-    res.status(500).json({ error: 'Failed to fetch staff notes from local data store.' });
+    res.status(500).json({ error: 'Firestore error: ' + err.message });
   }
 });
 
 app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, res) => {
   try {
-    const data = loadNotesData();
+    const database = db || initializeFirebase(); // Re-attempt initialization if db is null
+    if (!database) return res.status(503).json({ error: firebaseInitErrorMessage || 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
     const note = { ...req.body };
     if (req.file) {
       const result = await new Promise((resolve, reject) => {
@@ -108,10 +130,8 @@ app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, r
     note.published = note.published === 'true';
     note.originalPrice = note.originalPrice ? Number(note.originalPrice) : null;
     note.price = Number(note.price);
-    note.id = String(Date.now()); // Generate a simple ID
-    data.notes = [note, ...(data.notes || [])]; // Add new note to the beginning
-    saveNotesData(data);
-    res.status(201).json({ id: note.id, ...note });
+    const docRef = await database.collection('notes').add(note);
+    res.status(201).json({ id: docRef.id, ...note });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -119,7 +139,8 @@ app.post('/api/staff/notes', authMiddleware, upload.single('pdf'), async (req, r
 
 app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req, res) => {
   try {
-    const data = loadNotesData();
+    const database = db || initializeFirebase(); // Re-attempt initialization if db is null
+    if (!database) return res.status(503).json({ error: firebaseInitErrorMessage || 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
     const id = req.params.id;
     const updates = { ...req.body };
     if (req.file) {
@@ -139,13 +160,8 @@ app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req
     if (updates.price) updates.price = Number(updates.price);
     if (updates.originalPrice) updates.originalPrice = Number(updates.originalPrice);
 
-    const index = (data.notes || []).findIndex(item => item.id === id);
-    if (index === -1) {
-      return res.status(404).json({ error: 'Note not found' });
-    }
-    data.notes[index] = { ...data.notes[index], ...updates };
-    saveNotesData(data);
-    res.json({ note: data.notes[index] });
+    await database.collection('notes').doc(id).update(updates);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -153,15 +169,10 @@ app.put('/api/staff/notes/:id', authMiddleware, upload.single('pdf'), async (req
 
 app.delete('/api/staff/notes/:id', authMiddleware, async (req, res) => {
   try {
-    const data = loadNotesData();
-    const id = req.params.id;
-    const index = (data.notes || []).findIndex(item => item.id === id);
-    if (index === -1) {
-      return res.status(404).json({ error: 'Note not found' });
-    }
-    const removed = data.notes.splice(index, 1)[0];
-    saveNotesData(data);
-    res.json({ note: removed });
+    const database = db || initializeFirebase(); // Re-attempt initialization if db is null
+    if (!database) return res.status(503).json({ error: firebaseInitErrorMessage || 'Database connection is not ready. Ensure ALL FIREBASE keys are set correctly in Vercel Settings.' });
+    await database.collection('notes').doc(req.params.id).delete();
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
