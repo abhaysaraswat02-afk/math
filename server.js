@@ -9,13 +9,12 @@ const jwt = require('jsonwebtoken');
 
 // Firebase Admin Setup
 let db;
-if (!admin.apps.length) {
+try {
   const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
-
   if (FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY) {
-    try {
-      // Remove potential surrounding quotes and handle escaped newlines
-      const privateKeyFormatted = FIREBASE_PRIVATE_KEY.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
+    if (!admin.apps.length) {
+      // Remove surrounding quotes and handle escaped newlines (\n)
+      const privateKeyFormatted = FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: FIREBASE_PROJECT_ID,
@@ -23,13 +22,13 @@ if (!admin.apps.length) {
           privateKey: privateKeyFormatted,
         })
       });
-      db = admin.firestore();
-    } catch (err) {
-      console.error("Firebase initialization failed:", err.message);
     }
+    db = admin.firestore();
   } else {
-    console.error("Firebase Admin SDK not initialized: Missing one or more environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY).");
+    console.warn("Firebase credentials missing from environment variables.");
   }
+} catch (err) {
+  console.error("Firebase setup failed:", err.message);
 }
 
 // Cloudinary Setup
@@ -70,12 +69,12 @@ function authMiddleware(req, res, next) {
 
 app.get('/api/notes', async (req, res) => {
   try {
-    if (!db) throw new Error("Database not initialized");
+    if (!db) return res.status(503).json({ error: 'Database connection is not ready. Check server logs.' });
     const snapshot = await db.collection('notes').where('published', '==', true).get();
     const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch notes' });
+    res.status(500).json({ error: 'Firestore error: ' + err.message });
   }
 });
 
@@ -90,12 +89,12 @@ app.post('/api/staff/login', (req, res) => {
 
 app.get('/api/staff/notes', authMiddleware, async (req, res) => {
   try {
-    if (!db) throw new Error("Database not initialized");
+    if (!db) return res.status(503).json({ error: 'Database connection is not ready.' });
     const snapshot = await db.collection('notes').get();
     const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ notes });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch staff notes' });
+    res.status(500).json({ error: 'Firestore error: ' + err.message });
   }
 });
 
