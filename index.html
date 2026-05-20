@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Era of Mathantics – Jay Chaudhary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+/* ════════════════════════════════════════
+   DESIGN SYSTEM
+════════════════════════════════════════ */
+:root{
+  --bg:      #06090f;
+  --bg2:     #0a0e1a;
+  --bg3:     #0f1525;
+  --card:    #0d1220;
+  --card2:   #111827;
+  --border:  #1a2438;
+  --border2: #243048;
+  --gold:    #c8922a;
+  --gold-l:  #e8b84b;
+  --gold-d:  #a07018;
+  --blue:    #2d6be4;
+  --blue-l:  #5b8ef0;
+  --cyan:    #06b6d4;
+  --text:    #dde4f0;
+  --text2:   #a8b8d0;
+  --muted:   #566278;
+  --success: #10b981;
+  --danger:  #ef4444;
+  --hf: 'Sora', sans-serif;
+  --bf: 'Crimson Pro', serif;
+  --tr: 0.22s ease;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--bf);font-size:17px;overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+img{display:block;max-width:100%;}
+a{text-decoration:none;color:inherit;}
+
+/* ── UTILS ── */
+.container{max-width:1180px;margin:0 auto;}
+.tag{display:inline-block;font-family:var(--hf);font-size:0.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem;}
+.tag::before{content:'▸ ';}
+.title{font-family:var(--hf);font-size:clamp(1.65rem,3vw,2.5rem);font-weight:800;letter-spacing:-1.2px;line-height:1.1;margin-bottom:0.9rem;}
+.sub{color:var(--text2);font-size:1rem;line-height:1.7;max-width:500px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;font-family:var(--hf);font-weight:700;font-size:0.82rem;border:none;border-radius:10px;padding:0.75rem 1.5rem;cursor:pointer;transition:all var(--tr);}
+.btn-gold{background:var(--gold);color:#000;}
+.btn-gold:hover{background:var(--gold-l);transform:translateY(-2px);box-shadow:0 8px 28px rgba(200,146,42,0.28);}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2);}
+.btn-outline:hover{border-color:var(--blue-l);color:var(--blue-l);}
+.btn-red{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.25);}
+.btn-red:hover{background:rgba(239,68,68,0.2);}
+
+/* fade-up */
+.fu{opacity:0;transform:translateY(22px);transition:opacity 0.55s ease, transform 0.55s ease;}
+.fu.in{opacity:1;transform:none;}
+
+/* ════════════════════════════════════════
+   NAV
+════════════════════════════════════════ */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  height:62px;
+  background:rgba(6,9,15,0.92);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2.5rem;
+}
+.nav-logo{display:flex;align-items:center;gap:0.65rem;}
+.logo-mark{
+  width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--hf);font-weight:900;font-size:0.95rem;color:#000;
+  flex-shrink:0;
+}
+.logo-name{font-family:var(--hf);font-weight:800;font-size:1rem;letter-spacing:-0.4px;line-height:1.1;}
+.logo-sub{font-family:var(--hf);font-size:0.58rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.nav-links{display:flex;list-style:none;gap:0.15rem;}
+.nav-links a{font-family:var(--hf);font-size:0.78rem;font-weight:600;color:var(--text2);padding:0.4rem 0.85rem;border-radius:8px;transition:all var(--tr);}
+.nav-links a:hover{color:var(--text);background:var(--border);}
+.nav-r{display:flex;gap:0.7rem;align-items:center;}
+.nav-staff{font-family:var(--hf);font-size:0.72rem;font-weight:600;color:var(--muted);padding:0.4rem 0.8rem;border-radius:8px;border:1px solid var(--border);transition:all var(--tr);}
+.nav-staff:hover{color:var(--gold);border-color:var(--gold-d);}
+.hbg{display:none;flex-direction:column;gap:5px;cursor:pointer;}
+.hbg span{width:22px;height:2px;background:var(--text);border-radius:2px;}
+.mob-menu{display:none;position:fixed;top:62px;left:0;right:0;z-index:899;background:var(--bg2);border-bottom:1px solid var(--border);padding:1rem;flex-direction:column;gap:0.3rem;}
+.mob-menu.open{display:flex;}
+.mob-menu a{font-family:var(--hf);font-size:0.9rem;font-weight:600;color:var(--text2);padding:0.7rem 1rem;border-radius:8px;transition:background var(--tr);}
+.mob-menu a:hover{background:var(--border);}
+
+/* ════════════════════════════════════════
+   HERO
+════════════════════════════════════════ */
+#hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:8rem 2.5rem 5rem;position:relative;overflow:hidden;
+}
+.hero-bg{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 65% 55% at 70% 35%, rgba(45,107,228,0.08) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 45% at 15% 80%, rgba(200,146,42,0.07) 0%, transparent 60%);}
+.hero-grid-lines{position:absolute;inset:0;opacity:0.018;
+  background-image:linear-gradient(var(--text) 1px,transparent 1px),linear-gradient(90deg,var(--text) 1px,transparent 1px);
+  background-size:52px 52px;}
+.hero-inner{max-width:1180px;margin:0 auto;width:100%;display:grid;grid-template-columns:1.1fr 380px;gap:5rem;align-items:center;position:relative;z-index:1;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:0.6rem;background:rgba(200,146,42,0.1);border:1px solid rgba(200,146,42,0.28);color:var(--gold);font-family:var(--hf);font-size:0.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:0.32rem 0.9rem;border-radius:100px;margin-bottom:1.4rem;animation:fadeUp 0.55s ease both;}
+.hero-eyebrow svg{width:12px;height:12px;}
+.hero h1{font-family:var(--hf);font-size:clamp(2rem,4.8vw,3.6rem);font-weight:900;line-height:1.06;letter-spacing:-2.5px;margin-bottom:1.3rem;animation:fadeUp 0.55s 0.07s ease both;}
+.hero h1 .g{color:var(--gold);}
+.hero h1 .b{color:var(--blue-l);}
+.hero-desc{color:var(--text2);font-size:1.08rem;line-height:1.75;max-width:480px;margin-bottom:2rem;animation:fadeUp 0.55s 0.14s ease both;}
+.hero-btns{display:flex;gap:0.9rem;flex-wrap:wrap;animation:fadeUp 0.55s 0.21s ease both;}
+.hero-stats{display:flex;gap:2.5rem;margin-top:2.8rem;animation:fadeUp 0.55s 0.28s ease both;padding-top:2rem;border-top:1px solid var(--border);}
+.hs-val{font-family:var(--hf);font-weight:900;font-size:1.65rem;color:var(--gold);}
+.hs-lbl{font-family:var(--hf);font-size:0.65rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;}
+
+/* Profile card */
+.p-card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:2rem;position:relative;overflow:hidden;animation:fadeUp 0.6s 0.18s ease both;box-shadow:0 24px 64px rgba(0,0,0,0.45);}
+.p-card::after{content:'';position:absolute;top:-70px;right:-70px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(45,107,228,0.07),transparent 70%);pointer-events:none;}
+.p-av{width:82px;height:82px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#7a5010,var(--blue));display:flex;align-items:center;justify-content:center;font-family:var(--hf);font-weight:900;font-size:1.6rem;color:#fff;letter-spacing:-1px;margin-bottom:1.1rem;border:3px solid rgba(200,146,42,0.3);}
+.p-name{font-family:var(--hf);font-weight:800;font-size:1.15rem;letter-spacing:-0.4px;}
+.p-role{color:var(--gold);font-family:var(--hf);font-size:0.75rem;font-weight:600;letter-spacing:0.5px;margin-bottom:0.55rem;}
+.p-bio{color:var(--text2);font-size:0.88rem;line-height:1.65;margin-bottom:1.1rem;}
+.p-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1.1rem;}
+.ptag{background:rgba(45,107,228,0.1);color:var(--blue-l);border:1px solid rgba(45,107,228,0.2);font-family:var(--hf);font-size:0.65rem;font-weight:600;padding:0.2rem 0.6rem;border-radius:100px;}
+.p-rating{display:flex;align-items:center;gap:0.6rem;margin-bottom:1.1rem;}
+.stars{color:var(--gold);letter-spacing:2px;font-size:0.82rem;}
+.rat-t{color:var(--muted);font-family:var(--hf);font-size:0.75rem;}
+.p-links{display:flex;gap:0.5rem;}
+.plink{flex:1;display:flex;align-items:center;justify-content:center;gap:0.35rem;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--hf);font-size:0.7rem;font-weight:600;padding:0.5rem;transition:all var(--tr);}
+.plink:hover{background:rgba(239,68,68,0.1);color:#f87171;border-color:rgba(239,68,68,0.3);}
+
+/* ════════════════════════════════════════
+   SECTIONS
+════════════════════════════════════════ */
+section{padding:6rem 2.5rem;}
+#about{background:var(--bg2);}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+.about-card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:2.5rem;text-align:center;position:relative;overflow:hidden;}
+.about-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(200,146,42,0.06),transparent 65%);}
+.av-big{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#5a3a00,var(--blue));display:flex;align-items:center;justify-content:center;font-family:var(--hf);font-weight:900;font-size:2.6rem;color:#fff;letter-spacing:-2px;margin:0 auto 1.2rem;border:4px solid rgba(200,146,42,0.2);position:relative;z-index:1;}
+.av-name{font-family:var(--hf);font-weight:800;font-size:1.3rem;letter-spacing:-0.5px;}
+.av-role{color:var(--gold);font-family:var(--hf);font-size:0.78rem;font-weight:600;letter-spacing:0.5px;margin-bottom:1rem;}
+.av-creds{display:flex;justify-content:center;gap:1.8rem;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);}
+.cred-v{font-family:var(--hf);font-weight:900;font-size:1.5rem;color:var(--gold);}
+.cred-l{font-family:var(--hf);font-size:0.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.about-text p{color:var(--text2);line-height:1.8;margin-bottom:1.1rem;font-size:1rem;}
+.about-ul{list-style:none;display:flex;flex-direction:column;gap:0.55rem;margin:1.3rem 0;}
+.about-ul li{display:flex;align-items:center;gap:0.65rem;font-family:var(--hf);font-size:0.83rem;font-weight:600;}
+.about-ul li::before{content:'◆';color:var(--gold);font-size:0.5rem;}
+
+/* ════════════════════════════════════════
+   NOTES STORE
+════════════════════════════════════════ */
+#notes{background:var(--bg);}
+.notes-toolbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;}
+.filter-tabs{display:flex;gap:0.4rem;flex-wrap:wrap;}
+.ftab{font-family:var(--hf);font-size:0.75rem;font-weight:600;padding:0.4rem 0.9rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all var(--tr);}
+.ftab.active,.ftab:hover{background:var(--gold);color:#000;border-color:var(--gold);}
+.notes-search{display:flex;align-items:center;gap:0.5rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:0.45rem 0.9rem;}
+.notes-search input{background:none;border:none;outline:none;font-family:var(--hf);font-size:0.82rem;color:var(--text);width:200px;}
+.notes-search input::placeholder{color:var(--muted);}
+#notesGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;min-height:220px;}
+.loading-notes{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;gap:1rem;color:var(--muted);}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{grid-column:1/-1;text-align:center;padding:4rem;color:var(--muted);font-family:var(--hf);}
+.empty-state .es-icon{font-size:3rem;margin-bottom:1rem;}
+
+/* Note Card */
+.note-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:all var(--tr);position:relative;}
+.note-card:hover{border-color:rgba(200,146,42,0.38);transform:translateY(-4px);box-shadow:0 18px 45px rgba(0,0,0,0.35);}
+.note-thumb{height:148px;position:relative;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;}
+.note-thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease;}
+.note-card:hover .note-thumb img{transform:scale(1.04);}
+.note-thumb .thumb-fallback{font-size:3.5rem;}
+.note-ribbon{position:absolute;top:10px;left:0;background:var(--gold);color:#000;font-family:var(--hf);font-size:0.6rem;font-weight:700;padding:0.2rem 0.7rem 0.2rem 0.5rem;border-radius:0 100px 100px 0;letter-spacing:0.5px;}
+.note-ribbon.new{background:var(--blue);}
+.note-body{padding:1.3rem;flex:1;display:flex;flex-direction:column;}
+.note-cat{font-family:var(--hf);font-size:0.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:0.35rem;}
+.note-title{font-family:var(--hf);font-weight:700;font-size:0.96rem;line-height:1.3;margin-bottom:0.5rem;}
+.note-desc{color:var(--text2);font-size:0.85rem;line-height:1.62;flex:1;margin-bottom:0.9rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.note-meta{display:flex;gap:0.7rem;margin-bottom:1.1rem;flex-wrap:wrap;}
+.nm{display:flex;align-items:center;gap:0.28rem;font-family:var(--hf);font-size:0.68rem;color:var(--muted);}
+.note-foot{display:flex;align-items:center;justify-content:space-between;gap:0.6rem;}
+.note-price{font-family:var(--hf);font-weight:800;font-size:1.2rem;}
+.note-price .cur{color:var(--gold);font-size:0.82rem;}
+.note-price .orig{font-size:0.72rem;color:var(--muted);text-decoration:line-through;margin-left:0.3rem;font-weight:400;}
+.buy-btn{background:var(--gold);color:#000;border:none;border-radius:9px;padding:0.55rem 1.1rem;font-family:var(--hf);font-weight:700;font-size:0.78rem;cursor:pointer;transition:all var(--tr);white-space:nowrap;}
+.buy-btn:hover{background:var(--gold-l);transform:translateY(-1px);}
+
+/* ════════════════════════════════════════
+   VIDEOS
+════════════════════════════════════════ */
+#videos{background:var(--bg2);}
+.vids-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;}
+.vid-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all var(--tr);}
+.vid-card:hover{border-color:rgba(239,68,68,0.4);transform:translateY(-3px);}
+.vid-thumb{height:155px;position:relative;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:3.2rem;}
+.vid-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.32);display:flex;align-items:center;justify-content:center;transition:background var(--tr);}
+.vid-card:hover .vid-overlay{background:rgba(0,0,0,0.12);}
+.play-btn{width:48px;height:48px;border-radius:50%;background:rgba(239,68,68,0.9);display:flex;align-items:center;justify-content:center;font-size:1rem;transition:transform var(--tr);}
+.vid-card:hover .play-btn{transform:scale(1.12);}
+.vid-body{padding:1rem 1.1rem;}
+.vid-cat{font-family:var(--hf);font-size:0.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#f87171;margin-bottom:0.35rem;}
+.vid-title{font-family:var(--hf);font-weight:700;font-size:0.9rem;line-height:1.35;margin-bottom:0.45rem;}
+.vid-meta{display:flex;gap:0.8rem;}
+.vid-meta span{font-family:var(--hf);font-size:0.7rem;color:var(--muted);}
+.yt-cta{text-align:center;margin-top:2.5rem;}
+.yt-btn{display:inline-flex;align-items:center;gap:0.6rem;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:0.85rem 2rem;font-family:var(--hf);font-weight:700;font-size:0.85rem;transition:all var(--tr);}
+.yt-btn:hover{background:rgba(239,68,68,0.18);transform:translateY(-2px);}
+
+/* ════════════════════════════════════════
+   TESTIMONIALS
+════════════════════════════════════════ */
+#testimonials{background:var(--bg);}
+.test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;}
+.test-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.7rem;transition:all var(--tr);position:relative;}
+.test-card:hover{border-color:rgba(200,146,42,0.3);transform:translateY(-3px);}
+.test-q{position:absolute;top:1.2rem;right:1.4rem;font-size:2.5rem;color:var(--gold);opacity:0.12;font-family:var(--hf);font-weight:900;line-height:1;}
+.test-stars{color:var(--gold);letter-spacing:2px;font-size:0.78rem;margin-bottom:0.7rem;}
+.test-text{color:var(--text2);font-size:0.93rem;line-height:1.72;margin-bottom:1.1rem;}
+.test-author{display:flex;align-items:center;gap:0.65rem;}
+.test-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--blue));display:flex;align-items:center;justify-content:center;font-family:var(--hf);font-weight:700;font-size:0.75rem;color:#000;flex-shrink:0;}
+.test-name{font-family:var(--hf);font-weight:700;font-size:0.85rem;}
+.test-info{font-family:var(--hf);font-size:0.7rem;color:var(--muted);}
+
+/* ════════════════════════════════════════
+   LOCATION
+════════════════════════════════════════ */
+#location{background:var(--bg2);}
+.loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;}
+.map-wrap{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;height:350px;}
+.map-wrap iframe{width:100%;height:100%;border:none;}
+.loc-items{display:flex;flex-direction:column;gap:1.3rem;}
+.loc-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.3rem;display:flex;gap:1rem;align-items:flex-start;transition:border-color var(--tr);}
+.loc-item:hover{border-color:rgba(200,146,42,0.3);}
+.loc-ico{width:42px;height:42px;border-radius:9px;background:rgba(200,146,42,0.1);border:1px solid rgba(200,146,42,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.loc-lbl{font-family:var(--hf);font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.25rem;}
+.loc-val{font-family:var(--hf);font-weight:600;font-size:0.92rem;}
+.loc-sub{font-size:0.82rem;color:var(--text2);margin-top:0.15rem;}
+
+/* ════════════════════════════════════════
+   FAQ
+════════════════════════════════════════ */
+#faq{background:var(--bg);}
+.faq-wrap{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:0.7rem;}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.faq-q{padding:1.1rem 1.4rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;font-family:var(--hf);font-weight:600;font-size:0.92rem;user-select:none;transition:color var(--tr);}
+.faq-q:hover{color:var(--gold);}
+.faq-icon{font-size:1.1rem;color:var(--muted);transition:transform 0.3s,color 0.2s;flex-shrink:0;}
+.faq-item.open .faq-icon{transform:rotate(45deg);color:var(--gold);}
+.faq-a{display:none;padding:0 1.4rem 1.1rem;color:var(--text2);font-size:0.93rem;line-height:1.72;border-top:1px solid var(--border);}
+.faq-item.open .faq-a{display:block;}
+
+/* ════════════════════════════════════════
+   CTA
+════════════════════════════════════════ */
+.cta-band{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2.5rem;text-align:center;position:relative;overflow:hidden;}
+.cta-band::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 80% at 50% 50%,rgba(200,146,42,0.06),transparent 65%);}
+.cta-band h2{font-family:var(--hf);font-size:clamp(1.5rem,3vw,2.3rem);font-weight:800;letter-spacing:-1px;margin-bottom:0.7rem;position:relative;z-index:1;}
+.cta-band p{color:var(--text2);max-width:450px;margin:0 auto 2rem;position:relative;z-index:1;}
+
+/* ════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════ */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:3rem 2.5rem 1.8rem;}
+.ft-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem;}
+.ft-brand p{color:var(--text2);font-size:0.88rem;line-height:1.7;margin-top:0.8rem;max-width:260px;}
+.ft-col h4{font-family:var(--hf);font-weight:700;font-size:0.78rem;letter-spacing:0.3px;margin-bottom:0.9rem;}
+.ft-col ul{list-style:none;display:flex;flex-direction:column;gap:0.45rem;}
+.ft-col a{color:var(--text2);font-family:var(--hf);font-size:0.78rem;transition:color var(--tr);}
+.ft-col a:hover{color:var(--gold);}
+.ft-bot{max-width:1180px;margin:0 auto;border-top:1px solid var(--border);padding-top:1.4rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;}
+.ft-copy{color:var(--muted);font-family:var(--hf);font-size:0.75rem;}
+.ft-pay{display:flex;align-items:center;gap:0.45rem;font-family:var(--hf);font-size:0.7rem;color:var(--muted);}
+.pay-chip{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:0.18rem 0.55rem;font-family:var(--hf);font-size:0.65rem;font-weight:700;color:var(--blue-l);}
+
+/* ════════════════════════════════════════
+   PAYMENT MODAL
+════════════════════════════════════════ */
+#payOverlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.78);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1rem;}
+#payOverlay.open{display:flex;}
+.pay-modal{background:var(--card);border:1px solid var(--border2);border-radius:22px;padding:2.4rem;max-width:460px;width:100%;position:relative;box-shadow:0 32px 80px rgba(0,0,0,0.6);animation:mIn 0.3s ease both;}
+@keyframes mIn{from{opacity:0;transform:scale(0.94) translateY(12px);}to{opacity:1;transform:none;}}
+.m-close{position:absolute;top:1.1rem;right:1.1rem;width:30px;height:30px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:all var(--tr);}
+.m-close:hover{background:rgba(239,68,68,0.15);color:#f87171;border-color:rgba(239,68,68,0.3);}
+.m-title{font-family:var(--hf);font-weight:800;font-size:1.25rem;letter-spacing:-0.4px;margin-bottom:0.25rem;}
+.m-sub{color:var(--text2);font-size:0.87rem;margin-bottom:1.8rem;}
+.m-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.1rem;display:flex;gap:0.9rem;align-items:center;margin-bottom:1.5rem;}
+.m-item-ico{font-size:2rem;flex-shrink:0;}
+.m-item-name{font-family:var(--hf);font-weight:700;font-size:0.9rem;}
+.m-item-cat{font-family:var(--hf);font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.m-item-price{font-family:var(--hf);font-weight:800;font-size:1.4rem;color:var(--gold);margin-left:auto;flex-shrink:0;}
+.m-form{display:flex;flex-direction:column;gap:0.9rem;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;}
+.fg{display:flex;flex-direction:column;gap:0.35rem;}
+.fl{font-family:var(--hf);font-size:0.7rem;font-weight:600;color:var(--text2);letter-spacing:0.3px;}
+.fi{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:0.65rem 0.85rem;color:var(--text);font-family:var(--hf);font-size:0.85rem;outline:none;transition:border-color var(--tr);width:100%;}
+.fi:focus{border-color:var(--gold);}
+.fi::placeholder{color:var(--muted);}
+.pay-go{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#000;border:none;border-radius:12px;padding:0.95rem;font-family:var(--hf);font-weight:700;font-size:0.9rem;cursor:pointer;transition:all var(--tr);display:flex;align-items:center;justify-content:center;gap:0.55rem;margin-top:0.4rem;width:100%;}
+.pay-go:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 8px 22px rgba(200,146,42,0.28);}
+.pay-go:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.pay-note{text-align:center;font-family:var(--hf);font-size:0.7rem;color:var(--muted);margin-top:0.6rem;}
+.m-success{text-align:center;padding:1rem 0;display:none;}
+.s-ico{font-size:3.5rem;margin-bottom:0.8rem;animation:pop 0.4s ease both;}
+@keyframes pop{from{transform:scale(0);}to{transform:scale(1);}}
+.m-success h3{font-family:var(--hf);font-weight:800;font-size:1.25rem;margin-bottom:0.5rem;}
+.m-success p{color:var(--text2);font-size:0.9rem;line-height:1.65;}
+.done-btn{display:inline-flex;align-items:center;gap:0.5rem;background:var(--success);color:#000;border:none;border-radius:9px;padding:0.75rem 2rem;font-family:var(--hf);font-weight:700;font-size:0.85rem;cursor:pointer;margin-top:1.5rem;transition:all var(--tr);}
+.done-btn:hover{background:#059669;transform:translateY(-1px);}
+
+/* ════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media(max-width:960px){
+  .hero-inner{grid-template-columns:1fr;}
+  .p-card{display:none;}
+  .about-grid,.loc-grid{grid-template-columns:1fr;}
+  #notesGrid,.vids-grid,.test-grid{grid-template-columns:1fr 1fr;}
+  .ft-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  #nav{padding:0 1.2rem;}
+  .nav-links,.nav-staff{display:none;}
+  .hbg{display:flex;}
+  section{padding:4rem 1.2rem;}
+  #hero{padding:6rem 1.2rem 3rem;}
+  #notesGrid,.vids-grid,.test-grid{grid-template-columns:1fr;}
+  .frow{grid-template-columns:1fr;}
+  .hero-stats{gap:1.5rem;}
+  .ft-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     NAV
+══════════════════════════════════════ -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <div class="logo-mark">E</div>
+    <div>
+      <div class="logo-name">Era of Mathantics</div>
+      <div class="logo-sub">Jay chaudhary</div>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#notes">Notes</a></li>
+    <li><a href="#videos">Videos</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#location">Contact</a></li>
+  </ul>
+  <div class="nav-r">
+    <a href="staff.html" class="nav-staff">🔐 Staff Portal</a>
+    <button class="btn btn-gold" onclick="document.getElementById('notes').scrollIntoView({behavior:'smooth'})">Buy Notes</button>
+  </div>
+  <div class="hbg" onclick="document.getElementById('mobm').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mob-menu" id="mobm">
+  <a href="#about">About</a>
+  <a href="#notes">Notes</a>
+  <a href="#videos">Videos</a>
+  <a href="#testimonials">Reviews</a>
+  <a href="#location">Contact</a>
+  <a href="staff.html">🔐 Staff Portal</a>
+</div>
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">
+        <svg viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="3"/></svg>
+        India's Premier Study Notes Platform
+      </div>
+      <h1>Score Higher with<br><span class="g">Expert Notes</span> &<br><span class="b">Live Guidance</span></h1>
+      <p class="hero-desc">Carefully crafted, exam-focused study notes by <strong>Jay chaudhary</strong>. Mathematics, Science, Commerce, SSC, UPSC — get the edge to top every exam.</p>
+      <div class="hero-btns">
+        <button class="btn btn-gold" onclick="document.getElementById('notes').scrollIntoView({behavior:'smooth'})">📚 Explore Notes</button>
+        <button class="btn btn-outline" onclick="document.getElementById('videos').scrollIntoView({behavior:'smooth'})">▶ Free Videos</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hs-val">5,200+</div><div class="hs-lbl">Students</div></div>
+        <div><div class="hs-val">50+</div><div class="hs-lbl">Note Sets</div></div>
+        <div><div class="hs-val">4.9★</div><div class="hs-lbl">Avg Rating</div></div>
+        <div><div class="hs-val">8 yrs</div><div class="hs-lbl">Experience</div></div>
+      </div>
+    </div>
+    <div class="p-card">
+      <div class="p-av">JC</div>
+      <div class="p-name">Jay Chaudhary</div>
+      <div class="p-role">⭐ Educator · Mentor · Content Creator</div>
+      <p class="p-bio">8+ years of teaching. Simplifying complex concepts into clear, exam-ready notes loved by thousands across India.</p>
+      <div class="p-tags">
+        <span class="ptag">Mathematics</span><span class="ptag">Physics</span>
+        <span class="ptag">Chemistry</span><span class="ptag">Commerce</span>
+        <span class="ptag">SSC · UPSC</span>
+      </div>
+      <div class="p-rating"><span class="stars">★★★★★</span><span class="rat-t">4.9/5 · 800+ reviews</span></div>
+      <div class="p-links">
+        <a href="https://youtube.com" target="_blank" class="plink">▶ YouTube</a>
+        <a href="#location" class="plink">✉ Contact</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     ABOUT
+══════════════════════════════════════ -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-card fu">
+        <div class="av-big">JC</div>
+        <div class="av-name">Jay Chaudhary</div>
+        <div class="av-role">Founder · Era of Mathantics</div>
+        <p style="color:var(--text2);font-size:0.88rem;line-height:1.65;margin-top:0.5rem;position:relative;z-index:1;">Passionate educator committed to making quality education accessible and affordable for every Indian student.</p>
+        <div class="av-creds" style="position:relative;z-index:1;">
+          <div><div class="cred-v">8+</div><div class="cred-l">Yrs Teaching</div></div>
+          <div><div class="cred-v">5.2K</div><div class="cred-l">Students</div></div>
+          <div><div class="cred-v">50K+</div><div class="cred-l">Subscribers</div></div>
+        </div>
+      </div>
+      <div class="about-text fu">
+        <div class="tag">About the Educator</div>
+        <h2 class="title">Turning Complexity into Confident Understanding</h2>
+        <p>Hi, I'm <strong>Jay Chaudhary</strong>, founder of <em>Era of Mathantics</em>. I believe every student — regardless of location or background — deserves high-quality study material.</p>
+        <p>With 8+ years of teaching experience, I've helped over 5,000 students crack competitive exams, board exams, and university tests with structured, clear, comprehensive notes.</p>
+        <p>My notes are a <strong>complete learning system</strong> — designed with exam patterns in mind, packed with key formulas, solved examples, quick-revision sheets, and practice questions.</p>
+        <ul class="about-ul">
+          <li>M.Sc. Mathematics · B.Ed Certified Educator</li>
+          <li>Expert for Boards, SSC CGL, UPSC Prelims, JEE</li>
+          <li>Active YouTube educator · 50K+ Subscribers</li>
+          <li>Hindi & English medium notes available</li>
+          <li>Personalised mentorship & live doubt sessions</li>
+        </ul>
+        <button class="btn btn-gold" style="margin-top:1rem;" onclick="document.getElementById('notes').scrollIntoView({behavior:'smooth'})">Browse My Notes →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     NOTES STORE (dynamic from Cloudinary)
+══════════════════════════════════════ -->
+<section id="notes">
+  <div class="container">
+    <div class="sec-head fu" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1.5rem;margin-bottom:2.5rem;">
+      <div>
+        <div class="tag">Premium Study Notes</div>
+        <h2 class="title" style="margin-bottom:0.4rem;">Choose Your Subject</h2>
+        <p class="sub">Exam-focused PDFs with solved examples & quick revision sheets. Instant delivery after payment.</p>
+      </div>
+    </div>
+    <div class="notes-toolbar fu">
+      <div class="filter-tabs" id="filterTabs">
+        <button class="ftab active" data-cat="all">All</button>
+        <button class="ftab" data-cat="Mathematics">Maths</button>
+        <button class="ftab" data-cat="Science">Science</button>
+        <button class="ftab" data-cat="Commerce">Commerce</button>
+        <button class="ftab" data-cat="SSC/UPSC">SSC · UPSC</button>
+        <button class="ftab" data-cat="History">History</button>
+        <button class="ftab" data-cat="English">English</button>
+      </div>
+      <div class="notes-search">
+        <span style="color:var(--muted);">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search notes…" oninput="filterNotes()">
+      </div>
+    </div>
+    <div id="notesGrid">
+      <div class="loading-notes"><div class="spinner"></div><span style="font-family:var(--hf);font-size:0.85rem;">Loading notes…</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     YOUTUBE VIDEOS
+══════════════════════════════════════ -->
+<section id="videos">
+  <div class="container">
+    <div class="sec-head fu" style="text-align:center;margin-bottom:2.5rem;">
+      <div class="tag" style="display:block;text-align:center;">Free Content</div>
+      <h2 class="title" style="max-width:500px;margin:0 auto 0.6rem;">Watch & Learn — Completely Free</h2>
+      <p class="sub" style="margin:0 auto;">Subscribe for weekly uploads across all subjects.</p>
+    </div>
+    <div class="vids-grid">
+      <iframe class="fu" width="100%" height="220" src="https://www.youtube.com/embed/Ij0n9dN-Pgc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:16px; border: 1px solid var(--border);"></iframe>
+      <iframe class="fu" style="animation-delay:0.08s; border-radius:16px; border: 1px solid var(--border);" width="100%" height="220" src="https://www.youtube.com/embed/gNJ-scfMFNg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <iframe class="fu" style="animation-delay:0.16s; border-radius:16px; border: 1px solid var(--border);" width="100%" height="220" src="https://www.youtube.com/embed/pRfvd2dxHlM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="yt-cta fu"><a href="https://youtube.com" target="_blank" class="yt-btn">▶ Visit YouTube Channel — 50K+ Subscribers</a></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TESTIMONIALS
+══════════════════════════════════════ -->
+<section id="testimonials">
+  <div class="container">
+    <div class="sec-head fu" style="text-align:center;margin-bottom:2.5rem;">
+      <div class="tag" style="display:block;text-align:center;">Student Reviews</div>
+      <h2 class="title" style="max-width:480px;margin:0 auto 0.6rem;">What Students Are Saying</h2>
+      <p class="sub" style="margin:0 auto;">Real results from students who scored higher with Era of Mathantics.</p>
+    </div>
+    <div class="test-grid">
+      <div class="test-card fu"><div class="test-q">"</div>
+        <div class="test-stars">★★★★★</div>
+        <p class="test-text">Jay sir ke notes ne mera SSC CGL crack karwa diya! Notes bahut organized hain aur har topic clearly cover kiya gaya hai. 100% recommend karta hoon!</p>
+        <div class="test-author"><div class="test-av">RK</div><div><div class="test-name">Rahul Kumar</div><div class="test-info">SSC CGL 2024 · Delhi</div></div></div>
+      </div>
+      <div class="test-card fu" style="animation-delay:0.1s"><div class="test-q">"</div>
+        <div class="test-stars">★★★★★</div>
+        <p class="test-text">Class 12 Maths notes are absolutely brilliant. All concepts are crystal clear with examples. I scored 96/100 in boards! Payment via Razorpay was instant and smooth.</p>
+        <div class="test-author"><div class="test-av">PS</div><div><div class="test-name">Priya Sharma</div><div class="test-info">Class 12 Boards · Meerut</div></div></div>
+      </div>
+      <div class="test-card fu" style="animation-delay:0.2s"><div class="test-q">"</div>
+        <div class="test-stars">★★★★★</div>
+        <p class="test-text">Commerce bundle saved so much time. Accountancy concepts explained so simply. PDF delivered instantly after Razorpay payment. Highly recommended!</p>
+        <div class="test-author"><div class="test-av">AV</div><div><div class="test-name">Anjali Verma</div><div class="test-info">B.Com Student · Lucknow</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     LOCATION
+══════════════════════════════════════ -->
+<section id="location">
+  <div class="container">
+    <div class="sec-head fu" style="margin-bottom:2.5rem;">
+      <div class="tag">Find Us</div>
+      <h2 class="title">Location & Contact</h2>
+      <p class="sub">Based in Khair, UP. Available online across India for notes, mentorship & doubt sessions.</p>
+    </div>
+    <div class="loc-grid">
+      <div class="map-wrap fu">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14098.72262731454!2d77.8327898!3d27.942433599999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39735b50067acd5b%3A0xcf3ec1a02260939b!2sEra%20of%20Mathantics!5e0!3m2!1sen!2sin!4v1779212929317!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="loc-items fu">
+        <div class="loc-item"><div class="loc-ico">📍</div><div><div class="loc-lbl">Address</div><div class="loc-val">H. No. 114, Kashishon road, Block Colony, Khair</div><div class="loc-sub">Uttar Pradesh 202138</div></div></div>
+        <div class="loc-item"><div class="loc-ico">📞</div><div><div class="loc-lbl">Phone / WhatsApp</div><div class="loc-val">+91 84458 37333</div><div class="loc-sub">Mon–Sat · 9 AM – 8 PM</div></div></div>
+        <div class="loc-item"><div class="loc-ico">✉️</div><div><div class="loc-lbl">Email</div><div class="loc-val">jay@eraofmathantics.com</div><div class="loc-sub">Replies within 24 hours</div></div></div>
+        <div class="loc-item"><div class="loc-ico">▶</div><div><div class="loc-lbl">YouTube</div><div class="loc-val">Era of Mathantics</div><div class="loc-sub">50K+ Subscribers · Weekly uploads</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FAQ
+══════════════════════════════════════ -->
+<section id="faq">
+  <div class="container">
+    <div class="sec-head fu" style="text-align:center;margin-bottom:2.5rem;">
+      <div class="tag" style="display:block;text-align:center;">FAQ</div>
+      <h2 class="title" style="max-width:480px;margin:0 auto 0.6rem;">Common Questions</h2>
+    </div>
+    <div class="faq-wrap fu">
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">How will I receive the notes after payment? <span class="faq-icon">+</span></div><div class="faq-a">After successful Razorpay payment, you'll receive an email with a secure PDF download link within 5–10 minutes. Notes are high-quality, printable PDFs.</div></div>
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">Is the payment 100% secure? <span class="faq-icon">+</span></div><div class="faq-a">Yes! Razorpay is India's most trusted payment gateway, PCI-DSS Level 1 certified. Your card/UPI/net banking info is completely encrypted and secure.</div></div>
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">What payment methods are accepted? <span class="faq-icon">+</span></div><div class="faq-a">All major methods via Razorpay — UPI (GPay, PhonePe, Paytm), Credit/Debit Cards (Visa, Mastercard, RuPay), Net Banking, and EMI options.</div></div>
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">Are notes available in Hindi? <span class="faq-icon">+</span></div><div class="faq-a">Yes! Most note sets are available in both Hindi and English. The language is mentioned on each note card. Contact us for specific requirements.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band">
+  <h2>Ready to Score Higher? 🚀</h2>
+  <p>Join 5,200+ students who trust Era of Mathantics for expert, exam-ready notes.</p>
+  <button class="btn btn-gold" style="font-size:0.95rem;padding:1rem 2.5rem;" onclick="document.getElementById('notes').scrollIntoView({behavior:'smooth'})">📚 Buy Notes — Starting ₹199</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-grid">
+    <div class="ft-brand">
+      <div class="nav-logo"><div class="logo-mark">E</div><div><div class="logo-name">Era of Mathantics</div><div class="logo-sub">Jay Chaudhary</div></div></div>
+      <p>Premium study notes for Class 10–12, SSC, UPSC & competitive exams. Crafted with care from Khair, India.</p>
+    </div>
+    <div class="ft-col"><h4>Navigate</h4><ul><li><a href="#about">About Jay</a></li><li><a href="#notes">Buy Notes</a></li><li><a href="#videos">Free Videos</a></li><li><a href="#location">Contact</a></li></ul></div>
+    <div class="ft-col"><h4>Subjects</h4><ul><li><a href="#notes">Mathematics</a></li><li><a href="#notes">Science</a></li><li><a href="#notes">Commerce</a></li><li><a href="#notes">SSC / UPSC</a></li></ul></div>
+    <div class="ft-col"><h4>Support</h4><ul><li><a href="#faq">FAQ</a></li><li><a href="#">Refund Policy</a></li><li><a href="#">Privacy Policy</a></li><li><a href="staff.html">Staff Portal</a></li></ul></div>
+  </div>
+  <div class="ft-bot">
+    <div class="ft-copy">© 2025 Era of Mathantics · Jay Chaudhary · Khair, Uttar Pradesh</div>
+    <div class="ft-pay">Secure Payments via <span class="pay-chip">Razorpay</span><span class="pay-chip">UPI</span><span class="pay-chip">Cards</span></div>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════
+     PAYMENT MODAL
+══════════════════════════════════════ -->
+<div id="payOverlay">
+  <div class="pay-modal">
+    <div class="m-close" onclick="closeModal()">✕</div>
+    <div id="mForm">
+      <div class="m-title">Complete Your Purchase</div>
+      <div class="m-sub">Secure payment via Razorpay · Instant PDF delivery</div>
+      <div class="m-item">
+        <div class="m-item-ico" id="mIco">📚</div>
+        <div><div class="m-item-name" id="mName">–</div><div class="m-item-cat" id="mCat">–</div></div>
+        <div class="m-item-price" id="mPrice">₹0</div>
+      </div>
+      <div class="m-form">
+        <div class="frow">
+          <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="bName" placeholder="Your name" type="text"></div>
+          <div class="fg"><label class="fl">Phone *</label><input class="fi" id="bPhone" placeholder="10-digit" type="tel"></div>
+        </div>
+        <div class="fg"><label class="fl">Email *</label><input class="fi" id="bEmail" placeholder="you@example.com" type="email"></div>
+        <div class="fg"><label class="fl">Class / Exam</label><input class="fi" id="bClass" placeholder="e.g. Class 12, SSC CGL" type="text"></div>
+        <button class="pay-go" id="payBtn" onclick="doPayment()">🔐 Pay Securely with Razorpay</button>
+        <div class="pay-note">🔒 100% safe · Encrypted · PCI-DSS certified</div>
+      </div>
+    </div>
+    <div class="m-success" id="mSuccess">
+      <div class="s-ico">🎉</div>
+      <h3>Payment Successful!</h3>
+      <p>Your notes are on the way! Check your email for the PDF download link.<br><br>All the best with your studies — Jay Sir is rooting for you! 🙏</p>
+      <button class="done-btn" onclick="closeModal()">✅ Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════ -->
+<script>
+/* ─── CONFIG ─────────────────────────────────────────────────────────
+   Replace with your actual Razorpay credentials
+   ─────────────────────────────────────────────────────────────────── */
+const CONFIG = {
+  RAZORPAY_KEY: 'YOUR_RAZORPAY_KEY_ID',           // IMPORTANT: Update this before deploying
+};
+
+/* ─── API ENDPOINT ───────────────────────────────────────────────── */
+const NOTES_API = '/api/notes';
+
+/* ─── STATE ──────────────────────────────────────────────────────── */
+let allNotes = [];
+let activeFilter = 'all';
+let currentNote = {};
+
+/* ─── FETCH NOTES FROM CLOUDINARY ─────────────────────────────────── */
+async function loadNotes() {
+  const grid = document.getElementById('notesGrid');
+  grid.innerHTML = '<div class="loading-notes"><div class="spinner"></div><span style="font-family:var(--hf);font-size:0.85rem;">Loading notes…</span></div>';
+  try {
+    const res = await fetch(NOTES_API);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    allNotes = (data.notes || []).filter(n => n.published !== false);
+    renderNotes(allNotes);
+  } catch(e) {
+    // Fall back to demo notes if DB not yet set up
+    allNotes = getDemoNotes();
+    renderNotes(allNotes);
+  }
+}
+
+function getDemoNotes() {
+  return [
+    {id:'demo1',title:'Complete Class 12 Maths',category:'Mathematics',description:'All chapters — Calculus, Algebra, Probability, Vectors. 200+ solved questions.',price:299,originalPrice:599,pages:180,language:'Hindi + English',emoji:'📐',badge:'HOT',published:true},
+    {id:'demo2',title:'Class 11 Science Bundle',category:'Science',description:'Mechanics, Thermodynamics, Organic & Inorganic Chemistry with NCERT alignment.',price:349,originalPrice:699,pages:220,language:'Hindi + English',emoji:'⚗️',badge:'NEW',published:true},
+    {id:'demo3',title:'Accountancy + Business Studies',category:'Commerce',description:'Partnership, Company Accounts, Cash Flow, Marketing Management — exam ready.',price:249,originalPrice:499,pages:160,language:'Hindi + English',emoji:'💰',badge:'',published:true},
+    {id:'demo4',title:'SSC CGL Complete Notes',category:'SSC/UPSC',description:'Quant, Reasoning, English, GK/GS — all four sections with 500+ MCQs & shortcuts.',price:399,originalPrice:799,pages:240,language:'Hindi + English',emoji:'🏛️',badge:'HOT',published:true},
+    {id:'demo5',title:'UPSC Social Science Notes',category:'History',description:'Ancient, Medieval & Modern History, World Geography, Indian Polity — board + UPSC.',price:349,originalPrice:649,pages:200,language:'Hindi + English',emoji:'📜',badge:'',published:true},
+    {id:'demo6',title:'English Mastery — Class 10 & 12',category:'English',description:'Grammar rules, letter formats, essay writing, comprehension & NCERT literature notes.',price:199,originalPrice:399,pages:130,language:'English',emoji:'✍️',badge:'NEW',published:true},
+  ];
+}
+
+/* ─── RENDER NOTES ───────────────────────────────────────────────── */
+function renderNotes(notes) {
+  const grid = document.getElementById('notesGrid');
+  if (!notes.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="es-icon">🔍</div><div style="font-family:var(--hf);font-weight:700;margin-bottom:0.4rem;">No notes found</div><div style="font-size:0.85rem;">Try a different search or category</div></div>';
+    return;
+  }
+  grid.innerHTML = notes.map((n,i) => `
+    <div class="note-card fu" style="animation-delay:${i*0.06}s">
+      <div class="note-thumb">
+        ${n.thumbnailUrl ? `<img src="${n.thumbnailUrl}" alt="${n.title}" loading="lazy">` : `<div class="thumb-fallback">${n.emoji||'📚'}</div>`}
+        ${n.badge ? `<div class="note-ribbon${n.badge==='NEW'?' new':''}">${n.badge==='HOT'?'🔥 HOT':'✨ NEW'}</div>` : ''}
+      </div>
+      <div class="note-body">
+        <div class="note-cat">${n.category}</div>
+        <div class="note-title">${n.title}</div>
+        <div class="note-desc">${n.description}</div>
+        <div class="note-meta">
+          <span class="nm">📄 ${n.pages||'–'} pages</span>
+          <span class="nm">🌐 ${n.language||'Hindi+English'}</span>
+          <span class="nm">📥 Instant PDF</span>
+        </div>
+        <div class="note-foot">
+          <div class="note-price"><span class="cur">₹</span>${n.price}${n.originalPrice?`<span class="orig">₹${n.originalPrice}</span>`:''}</div>
+          <button class="buy-btn" onclick="openModal('${n.title.replace(/'/g,"\\'")}',${n.price},'${n.emoji||'📚'}','${n.category}')">Buy Now</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  // Re-observe new cards
+  document.querySelectorAll('.note-card.fu').forEach(el => observer.observe(el));
+}
+
+/* ─── FILTER & SEARCH ────────────────────────────────────────────── */
+document.querySelectorAll('.ftab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeFilter = tab.dataset.cat;
+    filterNotes();
+  });
+});
+
+function filterNotes() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = allNotes;
+  if (activeFilter !== 'all') filtered = filtered.filter(n => n.category === activeFilter);
+  if (q) filtered = filtered.filter(n => n.title.toLowerCase().includes(q) || n.description.toLowerCase().includes(q));
+  renderNotes(filtered);
+}
+
+/* ─── PAYMENT MODAL ──────────────────────────────────────────────── */
+function openModal(name, price, icon, cat) {
+  currentNote = {name, price, icon, cat};
+  document.getElementById('mIco').textContent = icon;
+  document.getElementById('mName').textContent = name;
+  document.getElementById('mCat').textContent = cat;
+  document.getElementById('mPrice').textContent = '₹' + price;
+  document.getElementById('mForm').style.display = 'block';
+  document.getElementById('mSuccess').style.display = 'none';
+  ['bName','bPhone','bEmail','bClass'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('payOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('payOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('payOverlay').addEventListener('click', e => { if(e.target.id==='payOverlay') closeModal(); });
+
+function doPayment() {
+  const name  = document.getElementById('bName').value.trim();
+  const phone = document.getElementById('bPhone').value.trim();
+  const email = document.getElementById('bEmail').value.trim();
+  if (!name)  return alert('Please enter your full name.');
+  if (phone.length < 10) return alert('Please enter a valid 10-digit phone number.');
+  if (!email.includes('@')) return alert('Please enter a valid email address.');
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true; btn.textContent = 'Opening…';
+  const options = {
+    key: CONFIG.RAZORPAY_KEY,
+    amount: currentNote.price * 100,
+    currency: 'INR',
+    name: 'Era of Mathantics',
+    description: currentNote.name,
+    prefill: {name, email, contact: phone},
+    theme: {color: '#c8922a'},
+    handler: function() {
+      document.getElementById('mForm').style.display = 'none';
+      document.getElementById('mSuccess').style.display = 'block';
+      btn.disabled = false; btn.textContent = '🔐 Pay Securely with Razorpay';
+    },
+    modal: {ondismiss: () => { btn.disabled = false; btn.textContent = '🔐 Pay Securely with Razorpay'; }}
+  };
+  try { new Razorpay(options).open(); }
+  catch(e) { alert('Set your Razorpay Key in CONFIG.RAZORPAY_KEY'); btn.disabled=false; btn.textContent='🔐 Pay Securely with Razorpay'; }
+}
+
+/* ─── SCROLL ANIMATIONS ──────────────────────────────────────────── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+}, {threshold:0.1, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.fu').forEach(el => observer.observe(el));
+
+/* ─── INIT ───────────────────────────────────────────────────────── */
+loadNotes();
+</script>
+</body>
+</html>
